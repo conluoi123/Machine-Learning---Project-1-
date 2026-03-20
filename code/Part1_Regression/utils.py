@@ -80,3 +80,33 @@ def filter_and_clean_order_status(dataframe):
 
     return df
 
+def initialize_target_variable(dataframe):
+    """
+    Tính toán biến mục tiêu (thời gian giao hàng thực tế) và làm sạch các dữ liệu lỗi thời gian.
+
+    """
+    df = dataframe.copy()
+    
+    start_date = 'order_purchase_timestamp'
+    end_date = 'order_delivered_customer_date'
+    
+    # Loại bỏ các dòng không có ngày giao hàng thực tế
+    initial_rows = len(df)
+    df = df.dropna(subset=[end_date])
+    
+    # Tính toán biến mục tiêu (Đơn vị: Ngày)
+    df['order_delivered_customer_date'] = pd.to_datetime(df['order_delivered_customer_date'])
+    df['order_purchase_timestamp'] = pd.to_datetime(df['order_purchase_timestamp'])
+    df['target_delivery_days'] = (df[end_date] - df[start_date]).dt.total_seconds() / 86400
+    
+    # Lọc bỏ các dòng lỗi logic
+    # Loại bỏ các đơn hàng có thời gian giao <= 0 (ngày nhận trước hoặc bằng ngày đặt - lỗi hệ thống)
+    df = df[df['target_delivery_days'] > 0]
+    
+    final_rows = len(df)
+    print(f"--- KHỞI TẠO BIẾN MỤC TIÊU ---")
+    print(f"- Số dòng bị loại bỏ (do thiếu ngày giao hoặc lỗi logic): {initial_rows - final_rows}")
+    print(f"- Số lượng mẫu còn lại: {final_rows}")
+    print(f"- Thời gian giao hàng trung bình trong tập dữ liệu: {df['target_delivery_days'].mean():.2f} ngày")
+    
+    return df
