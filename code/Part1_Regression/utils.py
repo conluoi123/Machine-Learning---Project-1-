@@ -110,3 +110,86 @@ def initialize_target_variable(dataframe):
     print(f"- Thời gian giao hàng trung bình trong tập dữ liệu: {df['target_delivery_days'].mean():.2f} ngày")
     
     return df
+
+def fill_time_gap_with_median(df, ref_col, target_col):
+    """
+    Điền giá trị thiếu của target_col dựa trên ref_col + median duration.
+    Có báo cáo số lượng dòng đã điền.
+    """
+    duration = (df[target_col] - df[ref_col]).dt.total_seconds()
+    median_val = duration.median()
+    
+    mask = df[target_col].isnull() & df[ref_col].notnull()
+    
+    filled_count = mask.sum() 
+    
+    df.loc[mask, target_col] = df.loc[mask, ref_col] + pd.to_timedelta(median_val, unit='s')
+    
+    print(f"--- Xử lý cột: {target_col} ---")
+    print(f"   + Số dòng đã điền: {filled_count:,}")
+    print(f"   + Khoảng lệch trung vị (Median): {median_val/3600:.2f} giờ")
+    print("-" * 30)
+    
+    return df
+def optimize_logistics_timestamps(dataframe):
+    """
+    Hàm tổng quát để xử lý toàn bộ chuỗi thời gian logistics.
+    """
+    df = dataframe.copy()
+
+    time_cols = ['order_purchase_timestamp', 'order_approved_at', 
+                 'order_delivered_carrier_date']
+    
+    for col in time_cols:
+        if col in df.columns:
+            df[col] = pd.to_datetime(df[col], errors='coerce')
+    
+    df = fill_time_gap_with_median(df, 'order_purchase_timestamp', 'order_approved_at')
+    
+    df = fill_time_gap_with_median(df, 'order_approved_at', 'order_delivered_carrier_date')
+    
+    return df
+
+def fill_product_specs_smart(dataframe):
+    """
+    Điền các giá trị thiếu cho các cột kích thước sản phẩm
+    """
+    df = dataframe.copy()
+    cols_to_fill = ['product_weight_g', 'product_length_cm', 
+                    'product_height_cm', 'product_width_cm']
+    print("--- XỬ LÝ KÍCH THƯỚC & TRỌNG LƯỢNG ---")
+    for col in cols_to_fill:
+        initial_nulls = df[col].isnull().sum()
+        if initial_nulls == 0:
+            continue
+
+        # Bước 1: Thử điền bằng trung vị của nhóm sản phẩm 
+        if 'product_category_name_english' in df.columns:
+            df[col] = df[col].fillna(df.groupby('product_category_name_english')[col].transform('median'))
+        
+        # Bước 2: Nếu vẫn còn trống, điền bằng trung vị toàn cục
+        global_median = df[col].median()
+        df[col] = df[col].fillna(global_median)
+        
+        print(f"-> Cột {col}: Đã điền {initial_nulls} dòng. (Global Median dùng: {global_median})")
+        
+    return df
+
+def handle_category_missing(df):
+    """
+    Xử lý giá trị thiếu cho cột tên danh mục sản phẩm.
+    """
+    col = 'product_category_name_english'
+    
+    if col in df.columns:
+        # 1. Chuyển về chữ thường để đồng nhất 
+        df[col] = df[col].str.lower()
+        
+        # 2. Điền giá trị thiếu bằng nhãn 'other'
+        null_count = df[col].isnull().sum()
+        df[col] = df[col].fillna('other')
+        
+        print(f"--- XỬ LÝ DANH MỤC ---")
+        print(f"-> Đã điền {null_count} dòng trống bằng nhãn 'other'.")
+    
+    return df
