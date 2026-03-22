@@ -193,3 +193,64 @@ def handle_category_missing(df):
         print(f"-> Đã điền {null_count} dòng trống bằng nhãn 'other'.")
     
     return df
+
+def standardize_column_formats(df):
+    """
+    Chuẩn hóa định dạng dữ liệu
+    """
+    df_standardized = df.copy()
+
+    # 1. Định dạng NGÀY THÁNG (Datetime)
+    date_cols = [
+        'order_purchase_timestamp', 'order_approved_at', 
+        'order_delivered_carrier_date', 'order_delivered_customer_date', 
+        'order_estimated_delivery_date', 'shipping_limit_date'
+    ]
+    for col in date_cols:
+        if col in df_standardized.columns:
+            df_standardized[col] = pd.to_datetime(df_standardized[col], errors='coerce')
+
+    # 2. Định dạng SỐ (Numeric/Float)
+    num_cols = [
+        'price', 'freight_value', 'product_weight_g', 
+        'product_length_cm', 'product_height_cm', 'product_width_cm',
+        'target_delivery_days'
+    ]
+    for col in num_cols:
+        if col in df_standardized.columns:
+            df_standardized[col] = pd.to_numeric(df_standardized[col], errors='coerce')
+
+    # 3. Định dạng CHUỖI VĂN BẢN (String/Object)
+    string_cols = [
+        'customer_city', 'customer_state', 'seller_city', 
+        'seller_state', 'product_category_name_english'
+    ]
+    for col in string_cols:
+        if col in df_standardized.columns:
+            # Ép kiểu string, viết thường và trim khoảng trắng
+            df_standardized[col] = df_standardized[col].astype(str).str.lower().str.strip()
+
+    print("--- CHUẨN HÓA ĐỊNH DẠNG HOÀN TẤT ---")
+    return df_standardized
+
+def handle_duplicates(df, subset=None):
+    """
+    Phát hiện và loại bỏ các dòng trùng lặp trong DataFrame.
+    """
+    df_clean = df.copy()
+    
+    duplicate_count = df_clean.duplicated(subset=subset).sum()
+    
+    if duplicate_count == 0:
+        print("--- KIỂM TRA TRÙNG LẶP ---")
+        print("Không tìm thấy dòng trùng lặp nào.")
+        return df_clean
+
+    df_clean = df_clean.drop_duplicates(subset=subset, keep='first')
+    
+    print("--- XỬ LÝ TRÙNG LẶP HOÀN TẤT ---")
+    print(f"- Số lượng dòng trùng lặp đã xóa: {duplicate_count:,}")
+    print(f"- Kích thước dữ liệu sau khi xóa: {df_clean.shape}")
+    print("-" * 30)
+    
+    return df_clean
