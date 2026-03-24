@@ -1,5 +1,7 @@
 import os   
 import pandas as pd
+import numpy as np
+from sklearn.ensemble import IsolationForest
 
 def read_data(path, file_name):
     file_path = os.path.join(path, file_name)
@@ -193,3 +195,61 @@ def handle_category_missing(df):
         print(f"-> Đã điền {null_count} dòng trống bằng nhãn 'other'.")
     
     return df
+
+def compare_outlier_methods(df_final, list_columns, contamination=0.05): 
+    """
+        So sánh 2 phương pháp: 
+            - IQR
+            - Isolation Forest 
+        Args: 
+            df_final: Dataframe dữ liệu 
+            list_columns: danh sách các cột cần xử lí 
+            contamination: Tỷ lệ dữ liệu ngoại lai (mặc định 0.05)
+        Returns: 
+            pd.Dataframe: Dataframe kèm theo 2 cột mới đánh dấu outliers 
+    """
+    df = df_final.copy()
+    # IQR
+    iqr_outliers = pd.Series([False] * len(df), index=df.index)
+    for col in list_columns:
+        Q1 = df[col].quantile(0.25)
+        Q3 = df[col].quantile(0.75)
+        IQR = Q3 - Q1
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+        
+        column_outlier = (df_final[col] < lower_bound) | (df_final[col] > upper_bound)
+        iqr_outliers = iqr_outliers | column_outlier
+
+    df['is_outlier_iqr'] = iqr_outliers.astype(int)
+
+    # IsolationForest 
+    clf = IsolationForest(contamination=contamination, random_state=42)
+    predicts = clf.fit_predict(df[list_columns].fillna(0))
+    df['is_outlier_if'] = (predicts == -1).astype(int)
+    
+    return df 
+
+def summarize_outliers(df_processed): 
+    """
+        In ra bảng tóm tắt giữa hai phương pháp 
+    """
+    total = len(df_processed)
+    iqr_count = df_processed['is_outlier_iqr'].sum()
+    if_count = df_processed['is_outlier_if'].sum()
+    both = df_processed[(df_processed['is_outlier_iqr'] == 1) & (df_processed['is_outlier_if'] == 1)].shape[0]
+    
+    print(f"---Tổng kết xử lí Outliers---")
+    print(f"Tổng số bản ghi: {total}")
+    print(f"Số bản ghi IQR: {iqr_count}")
+    print(f"Số bản ghi Isolation Forest: {if_count}")
+    print(f"Số bản ghi cả 2: {both}")
+    print(f"Số lượng IQR xóa nhưng Isolation Forest giữ lại là {iqr_count-both}")
+
+
+
+
+
+
+    
+    
