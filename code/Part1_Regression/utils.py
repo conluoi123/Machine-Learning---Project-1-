@@ -341,3 +341,86 @@ def transform_and_scale_features(df, columns_to_scale):
             
     print(f"--- ĐÃ CHUẨN HÓA LOG + STANDARD SCALER CHO {len(columns_to_scale)} CỘT ---")
     return df_transformed
+
+def haversine_distance(lat1, lon1, lat2, lon2):
+    """
+    Tính khoảng cách bề mặt địa cầu (Haversine formula) giữa 2 điểm tọa độ.
+    Trọng số bán kính trái đất R = 6371 km.
+    """
+    R = 6371.0
+    
+    # Chuyển đổi từ độ sang radian
+    lat1, lon1, lat2, lon2 = map(np.radians, [lat1, lon1, lat2, lon2])
+    
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    
+    a = np.sin(dlat / 2)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2)**2
+    c = 2 * np.arcsin(np.sqrt(a))
+    
+    distance = R * c
+    return distance
+
+def merge_geolocation_and_calculate_distance(df_main, geo_df):
+    """
+    1. Làm sạch bảng Geolocation (Gộp các tọa độ trùng mã zip_code)
+    2. Nối tọa độ vào nhà của Khách hàng (Customer)
+    3. Nối tọa độ vào kho của Người bán (Seller)
+    4. Tính khoảng cách distance_km 
+    """
+    df_result = df_main.copy()
+    
+    # Xử lý Geolocation: 1 Zip Code có thể có nhiều tọa độ do lỗi ghi nhận, ta lấy giá trị trung bình
+    geo_clean = geo_df.groupby('geolocation_zip_code_prefix').agg({
+        'geolocation_lat': 'mean',
+        'geolocation_lng': 'mean'
+    }).reset_index()
+    
+    print("--- ĐANG KẾT NỐI TỌA ĐỘ TỪ MÃ BƯU ĐIỆN ---")
+    
+    # Merge cho Customer
+    df_result = pd.merge(
+        df_result, geo_clean, 
+        how='left', 
+        left_on='customer_zip_code_prefix', 
+        right_on='geolocation_zip_code_prefix'
+    )
+    df_result = df_result.rename(columns={
+        'geolocation_lat': 'customer_lat',
+        'geolocation_lng': 'customer_lng'
+    }).drop(columns=['geolocation_zip_code_prefix'])
+    
+    # Merge cho Seller
+    df_result = pd.merge(
+        df_result, geo_clean, 
+        how='left', 
+        left_on='seller_zip_code_prefix', 
+        right_on='geolocation_zip_code_prefix'
+    )
+    df_result = df_result.rename(columns={
+        'geolocation_lat': 'seller_lat',
+        'geolocation_lng': 'seller_lng'
+    }).drop(columns=['geolocation_zip_code_prefix'])
+    
+    # Tính Haversine Distance
+    df_result['distance_km'] = haversine_distance(
+        df_result['customer_lat'], df_result['customer_lng'],
+        df_result['seller_lat'], df_result['seller_lng']
+    )
+    
+    # Điền giá trị trung bình khoảng cách cho các dòng không tìm thấy mã Zip Code (nếu có null)
+    null_dist_count = df_result['distance_km'].isnull().sum()
+    if null_dist_count > 0:
+        median_dist = df_result['distance_km'].median()
+        df_result['distance_km'] = df_result['distance_km'].fillna(median_dist)
+        print(f"Cảnh báo: Đã điền {null_dist_count} dữ liệu lỗi tọa độ bằng median_dist = {median_dist:.2f} km")
+        
+    print(f"Khoảng cách trung bình (trước chuẩn hóa): {df_result['distance_km'].mean():.2f} km")
+    
+    # Quét dọn các cột thừa không dùng nữa bằng cách xoá sạch (tọa độ nguyên thủy)
+    df_result = df_result.drop(columns=[
+        'customer_lat', 'customer_lng', 'seller_lat', 'seller_lng',
+        'customer_zip_code_prefix', 'seller_zip_code_prefix'
+    ], errors='ignore')
+    
+    return df_result
