@@ -2,6 +2,8 @@ import os
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import IsolationForest
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 
 def read_data(path, file_name):
     file_path = os.path.join(path, file_name)
@@ -310,4 +312,32 @@ def handle_duplicates(df, subset=None):
     
     return df_clean
 
-
+def transform_and_scale_features(df, columns_to_scale):
+    """
+    Hàm thực hiện 2 bước tiến xử lý cho các biến liên tục bị lệch phải:
+    1. Log Transformation (np.log1p) để giảm lệch (skewness)
+    2. StandardScaler để đưa về phân phối có Mean=0, Std=1
+    
+    Args:
+        df (pd.DataFrame): Dataframe gốc
+        columns_to_scale (list): Danh sách các cột cần chuẩn hóa.
+        
+    Returns:
+        pd.DataFrame: Dataframe đã được biến đổi.
+    """
+    df_transformed = df.copy()
+    scaler = StandardScaler()
+    
+    for col in columns_to_scale:
+        if col in df_transformed.columns:
+            # Bước 1: Log transform an toàn
+            log_transformed_data = np.log1p(df_transformed[col])
+            
+            # Bước 2: StandardScaler (reshape về 2D)
+            scaled_data = scaler.fit_transform(log_transformed_data.values.reshape(-1, 1))
+            
+            # Cập nhật kết quả vào Dataframe
+            df_transformed[col] = scaled_data.flatten()
+            
+    print(f"--- ĐÃ CHUẨN HÓA LOG + STANDARD SCALER CHO {len(columns_to_scale)} CỘT ---")
+    return df_transformed
