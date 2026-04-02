@@ -39,7 +39,7 @@ def drop_unnecessary_columns(df, custom_drop_list=None):
         'product_name_lenght', 'product_description_lenght', 'product_photos_qty',
         
         # Nhóm Vị trí quá chi tiết: Tránh Overfitting 
-        'customer_zip_code_prefix', 'seller_zip_code_prefix'
+        # 'customer_zip_code_prefix', 'seller_zip_code_prefix'
     ]
     # 2. Kết hợp với danh sách tùy chỉnh (nếu có)
     if custom_drop_list:
