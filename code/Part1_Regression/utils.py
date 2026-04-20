@@ -85,32 +85,54 @@ def filter_and_clean_order_status(dataframe):
 
     return df
 
-def initialize_target_variable(dataframe):
+def initialize_target_variable(dataframe, mode='shipping'):
     """
-    Tính toán biến mục tiêu (thời gian giao hàng thực tế) và làm sạch các dữ liệu lỗi thời gian.
-
+    Tính toán biến mục tiêu và làm sạch dữ liệu.
+    
+    Parameters:
+    - dataframe: DataFrame đầu vào.
+    - mode: 
+        'shipping': Dự đoán từ lúc bưu cục nhận hàng đến lúc khách nhận (Carrier -> Customer).
+        'total': Dự đoán từ lúc đặt hàng đến lúc khách nhận (Purchase -> Customer).
     """
     df = dataframe.copy()
     
-    start_date = 'order_purchase_timestamp'
-    end_date = 'order_delivered_customer_date'
+    # 1. Chuyển đổi toàn bộ cột thời gian quan trọng sang datetime
+    time_cols = [
+        'order_purchase_timestamp', 
+        'order_delivered_carrier_date', 
+        'order_delivered_customer_date'
+    ]
+    for col in time_cols:
+        df[col] = pd.to_datetime(df[col])
     
-    # Loại bỏ các dòng không có ngày giao hàng thực tế
+    # 2. Loại bỏ các dòng thiếu mốc thời gian quan trọng
+    # Nếu dự đoán chặng ship, bắt buộc phải có ngày bàn giao cho bưu cục (carrier_date)
     initial_rows = len(df)
-    df = df.dropna(subset=[end_date])
+    required_cols = ['order_delivered_customer_date']
+    if mode == 'shipping':
+        required_cols.append('order_delivered_carrier_date')
+        
+    df = df.dropna(subset=required_cols)
     
-    # Tính toán biến mục tiêu (Đơn vị: Ngày)
-    df['order_delivered_customer_date'] = pd.to_datetime(df['order_delivered_customer_date'])
-    df['order_purchase_timestamp'] = pd.to_datetime(df['order_purchase_timestamp'])
+    # 3. Xác định mốc bắt đầu và kết thúc
+    end_date = 'order_delivered_customer_date'
+    start_date = 'order_delivered_carrier_date' if mode == 'shipping' else 'order_purchase_timestamp'
+    
+    # 4. Tính toán biến mục tiêu (Đơn vị: Ngày)
     df['target_delivery_days'] = (df[end_date] - df[start_date]).dt.total_seconds() / 86400
     
-    df = df[df['target_delivery_days'] > 0]
+    # 5. Loại bỏ lỗi logic (thời gian âm hoặc bằng 0) và Outliers quá nặng (ví dụ > 100 ngày)
+    df = df[(df['target_delivery_days'] > 0) & (df['target_delivery_days'] <= 100)]
     
     final_rows = len(df)
-    print(f"KHỞI TẠO BIẾN MỤC TIÊU ")
-    print(f"- Số dòng bị loại bỏ (do thiếu ngày giao hoặc lỗi logic): {initial_rows - final_rows}")
+    
+    print(f"--- KHỞI TẠO BIẾN MỤC TIÊU ({mode.upper()}) ---")
+    print(f"- Mốc tính: {start_date} -> {end_date}")
+    print(f"- Số dòng bị loại bỏ: {initial_rows - final_rows}")
     print(f"- Số lượng mẫu còn lại: {final_rows}")
-    print(f"- Thời gian giao hàng trung bình trong tập dữ liệu: {df['target_delivery_days'].mean():.2f} ngày")
+    print(f"- Thời gian trung bình: {df['target_delivery_days'].mean():.2f} ngày")
+    print("-" * 40)
     
     return df
 
