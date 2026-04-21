@@ -24,43 +24,7 @@ def read_data(path, file_name):
     else:
         print(f"File {file_name} không tồn tại trong đường dẫn.")
         return None
-    
-def drop_unnecessary_columns(df, custom_drop_list=None):
-    """
-    Hàm tự động loại bỏ các cột không có giá trị dự báo cho bài toán vận chuyển.
-    
-    Args:
-        dataframe (pd.DataFrame): DataFrame tổng hợp sau khi merge.
-        custom_drop_list (list, optional): Danh sách các cột bổ sung muốn xóa.
-        
-    Returns:
-        pd.DataFrame: DataFrame đã được làm sạch.
-    """
-    # Danh sách các cột không dùng
-    default_drop_cols = [
-        'order_id', 'customer_id', 'order_item_id', 'product_id', 'seller_id', 
-        'review_id', 'customer_unique_id',
-        'review_comment_title', 'review_comment_message', 
-        'product_category_name', 
-        'product_name_lenght', 'product_description_lenght', 'product_photos_qty',
-        
-    ]
-    if custom_drop_list:
-        cols_to_drop = list(set(default_drop_cols + custom_drop_list))
-    else:
-        cols_to_drop = default_drop_cols
-        
-    initial_cols = df.shape[1]
-    df_cleaned = df.drop(columns=cols_to_drop, errors='ignore')
-    final_cols = df_cleaned.shape[1]
-    
-    dropped_count = initial_cols - final_cols
-    print(f"ĐÃ LÀM SẠCH CỘT")
-    print(f" + Tổng số cột ban đầu: {initial_cols}")
-    print(f" + Số cột đã bị loại bỏ: {dropped_count}")
-    print(f" + Số cột còn lại: {final_cols}")
-    
-    return df_cleaned
+
 
 def filter_and_clean_order_status(dataframe):
     """
@@ -175,30 +139,6 @@ def optimize_logistics_timestamps(dataframe):
     
     return df
 
-def fill_product_specs_smart(dataframe):
-    """
-    Điền các giá trị thiếu cho các cột kích thước sản phẩm
-    """
-    df = dataframe.copy()
-    cols_to_fill = ['product_weight_g', 'product_length_cm', 
-                    'product_height_cm', 'product_width_cm']
-    print(" XỬ LÝ KÍCH THƯỚC & TRỌNG LƯỢNG ")
-    for col in cols_to_fill:
-        initial_nulls = df[col].isnull().sum()
-        if initial_nulls == 0:
-            continue
-
-        # Điền bằng trung vị của nhóm sản phẩm 
-        if 'product_category_name_english' in df.columns:
-            df[col] = df[col].fillna(df.groupby('product_category_name_english')[col].transform('median'))
-        
-        # Nếu vẫn còn trống, điền bằng trung vị toàn cục
-        global_median = df[col].median()
-        df[col] = df[col].fillna(global_median)
-        
-        print(f" Cột {col}: Đã điền {initial_nulls} dòng. (Global Median dùng: {global_median})")
-        
-    return df
 
 def handle_category_missing(df):
     """
@@ -253,39 +193,6 @@ def visualize_outliers(df, cols, n_cols=2, figsize=(20, 12), title='Phân Tích 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.show()
 
-
-def handle_outliers_pipeline(df):
-    df_working = df.copy()
-
-    # XỬ LÝ TARGET BẰNG IQR 
-    Q1 = df_working['target_delivery_days'].quantile(0.25)
-    Q3 = df_working['target_delivery_days'].quantile(0.75)
-    IQR = Q3 - Q1
-    
-    lower_bound = Q1 - 1.5 * IQR
-    upper_bound = Q3 + 1.5 * IQR
-    
-    df_working = df_working[(df_working['target_delivery_days'] >= lower_bound) & 
-                            (df_working['target_delivery_days'] <= upper_bound)].copy()
-    print(f"Đã loại bỏ ngoại lai Target (IQR). Dữ liệu còn lại: {len(df_working)} dòng.")
-
-    # XỬ LÝ FEATURES TÀI CHÍNH BẰNG LOG TRANSFORM 
-    df_working.loc[:, 'price'] = np.log1p(df_working['price'])
-    df_working.loc[:, 'freight_value'] = np.log1p(df_working['freight_value'])
-    print("Đã nén biến Price và Freight Value bằng Log Transform.")
-
-    # LỌC ĐA BIẾN CHO FEATURES KÍCH THƯỚC 
-    size_features = ['product_length_cm', 'product_height_cm', 'product_width_cm']
-    
-    iso_forest = IsolationForest(contamination=0.05, random_state=42)
-    outlier_labels = iso_forest.fit_predict(df_working[size_features])
-    
-    df_final = df_working[outlier_labels == 1].copy()
-    
-    print(f"Isolation Forest đã loại bỏ thêm {sum(outlier_labels == -1)} dòng ngoại lai đa biến.")
-    print(f"Tổng dữ liệu sạch: {len(df_final)} dòng.")
-    
-    return df_final
 
 def standardize_column_formats(df):
     """
