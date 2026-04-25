@@ -1,69 +1,237 @@
-# Machine Learning Project 1: Olist E-commerce Delivery Time Prediction
+# 🛒 Machine Learning Project 1: Olist E-commerce Delivery Prediction
 
-## 1. Giới thiệu
+> **Môn học:** Machine Learning | **Dataset:** [Brazilian E-Commerce (Olist)](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
 
-Đây là dự án Machine Learning đầu tiên trong học phần, tập trung vào bài toán **Hồi quy (Regression)**. Mục tiêu của dự án là xây dựng mô hình dự đoán thời gian giao hàng của các đơn hàng trên sàn thương mại điện tử Olist.
+---
 
-## 2. Cấu trúc thư mục
+## 📌 Tổng quan dự án
+
+Dự án ứng dụng các kỹ thuật Machine Learning từ cơ bản đến nâng cao trên bộ dữ liệu thương mại điện tử Olist (Brazil), bao gồm **2 phần chính**:
+
+| Phần                        | Bài toán  | Mục tiêu                                          |
+| --------------------------- | --------- | ------------------------------------------------- |
+| **Part 1 – Regression**     | Hồi quy   | Dự đoán **thời gian giao hàng** (số ngày)         |
+| **Part 2 – Classification** | Phân loại | Phân loại kết quả giao hàng / đánh giá khách hàng |
+
+---
+
+## 📁 Cấu trúc thư mục
 
 ```
 Machine-Learning---Project-1-/
+│
 ├── code/
-│   ├── Part1_Regression/      # Toàn bộ code xử lý và mô hình hồi quy
-│   └── Part2_Classification/  # (Sẽ cập nhật sau) Code phân loại
+│   ├── Part1_Regression/
+│   │   ├── notebook.ipynb          # EDA & tiền xử lý dữ liệu (Preprocessing)
+│   │   ├── models.ipynb            # Huấn luyện & đánh giá toàn bộ mô hình hồi quy
+│   │   ├── utils.py                # Hàm tiện ích dùng chung (metrics, plots, helpers)
+│   │   ├── requirements.txt        # Danh sách thư viện (Part 1)
+│   │   └── processed_data/         # Dữ liệu đã xử lý (local cache cho Part 1)
+│   │
+│   └── Part2_Classification/
+│       ├── notebook.ipynb          # EDA & tiền xử lý dữ liệu (Preprocessing)
+│       ├── models.ipynb            # Pipeline phân loại chính (Perceptron, LogReg, LDA/QDA...)
+│       ├── model_2.ipynb           # Thử nghiệm mô hình phân loại thay thế
+│       └── model_3.ipynb           # Thử nghiệm mô hình phân loại bổ sung
+│
 ├── data/
-│   ├── raw/                   # Dữ liệu thô (chưa xử lý)
-│   └── processed/             # Dữ liệu đã qua xử lý (đã làm sạch, feature engineering)
-├── models/                    # Lưu trữ các mô hình đã huấn luyện (.pkl)
-├── notebooks/                 # Các file Jupyter Notebook để thử nghiệm
-├── requirements.txt           # Danh sách thư viện cần thiết
-└── README.md                  # File này
+│   ├── olist_customers_dataset.csv
+│   ├── olist_orders_dataset.csv
+│   ├── olist_order_items_dataset.csv
+│   ├── olist_order_payments_dataset.csv
+│   ├── olist_order_reviews_dataset.csv
+│   ├── olist_products_dataset.csv
+│   ├── olist_sellers_dataset.csv
+│   ├── olist_geolocation_dataset.csv
+│   ├── product_category_name_translation.csv
+│   ├── brazil-states.geojson.txt   # GeoJSON biên giới các bang Brazil
+│   ├── raw_data.csv                # Dữ liệu thô đã merge (từ các bảng Olist)
+│   ├── raw/                        # Backup dữ liệu thô gốc
+│   ├── processed/                  # Dữ liệu đã xử lý & artifacts chia tập
+│   │   ├── train.csv / val.csv / test.csv
+│   │   ├── train_final.csv / val_final.csv / test_final.csv
+│   │   ├── X_train_scaled.csv / X_val_scaled.csv / X_test_scaled.csv
+│   │   ├── y_train.csv / y_val.csv / y_test.csv
+│   │   ├── olist_processed_data.joblib
+│   │   ├── processed_data.pkl
+│   │   ├── preprocessing_info.json
+│   │   ├── logistic_models.pkl
+│   │   ├── lda_qda_models.pkl
+│   │   └── perceptron_logreg_results.pkl
+│   └── saved_models/               # Encoder & Scaler đã fit
+│       ├── phase7_target_encoder.pkl
+│       └── phase8_quantile_scaler.pkl
+│
+├── report/
+│   ├── technical_report.md         # Báo cáo kỹ thuật chi tiết (Part 1 – Regression)
+│   ├── report.txt                  # Placeholder báo cáo
+│   └── figures/                    # Toàn bộ biểu đồ xuất ra
+│       ├── 01_target_distribution.png
+│       ├── 02_histograms.png
+│       ├── 03_boxplot.png
+│       ├── 04_correlation_matrix.png
+│       ├── 05_correlation_target.png
+│       ├── 06_scatter.png
+│       ├── 07_delay_outlier.png
+│       ├── comparison/             # So sánh tổng thể giữa các mô hình
+│       │   ├── cv_f1_boxplot.png
+│       │   ├── error_analysis.png
+│       │   ├── fisher_discriminability.png
+│       │   └── noise_robustness.png ...
+│       ├── lr/                     # Biểu đồ Logistic Regression
+│       │   ├── confusion_matrix_lr.png
+│       │   ├── calibration.png
+│       │   ├── kernel_lr.png
+│       │   ├── pr_curve_lr.png
+│       │   └── decision_boundary_*.png ...
+│       ├── lda_qda/                # Biểu đồ LDA & QDA
+│       │   ├── confusion_matrix_lda_qda.png
+│       │   └── roc_curve_test.png
+│       └── perceptron_logreg/      # Biểu đồ Perceptron & Logistic Regression
+│           ├── perceptron_convergence.png
+│           ├── perceptron_decision_boundary.png
+│           ├── logistic_loss_curve.png
+│           └── roc_pr_curve.png ...
+│
+├── .gitignore
+├── .gitattributes
+└── README.md
 ```
 
-## 3. Công nghệ sử dụng
+---
 
-- **Ngôn ngữ**: Python 3.10+
-- **Thư viện chính**:
-  - `pandas`, `numpy`: Xử lý dữ liệu
-  - `scikit-learn`: Xây dựng mô hình, đánh giá, tiền xử lý
-  - `matplotlib`, `seaborn`: Trực quan hóa dữ liệu
-  - `statsmodels`: Phân tích thống kê
-  - `category_encoders`: Mã hóa biến phân loại
+## ⚙️ Công nghệ sử dụng
 
-## 4. Hướng dẫn cài đặt
+| Thư viện            | Phiên bản | Mục đích                                |
+| ------------------- | --------- | --------------------------------------- |
+| `Python`            | 3.10+     | Ngôn ngữ chính                          |
+| `pandas`            | 3.0.2     | Xử lý & thao tác dữ liệu                |
+| `numpy`             | 2.4.4     | Tính toán số học, đại số tuyến tính     |
+| `scikit-learn`      | 1.8.0     | Tiền xử lý, pipeline, đánh giá mô hình  |
+| `matplotlib`        | 3.10.8    | Trực quan hóa dữ liệu                   |
+| `seaborn`           | 0.13.2    | Biểu đồ thống kê nâng cao               |
+| `statsmodels`       | 0.14.6    | Phân tích hồi quy thống kê              |
+| `category_encoders` | 2.9.0     | Mã hóa biến phân loại (Target Encoding) |
+| `jinja2`            | ≥ 3.0.0   | Render báo cáo HTML                     |
 
-1. Clone hoặc tải code về máy
-2. Mở terminal/command prompt trong thư mục gốc
-3. Tạo môi trường ảo (khuyến nghị):
-   ```bash
-   python -m venv .venv
-   .venv\Scripts\activate
-   ```
-4. Cài đặt thư viện:
-   ```bash
-   pip install -r requirements.txt
-   ```
+---
 
-## 5. Cách chạy code
+## 🚀 Hướng dẫn cài đặt & chạy
 
-### 5.1. Xử lý dữ liệu (Data Processing)
+### 1. Clone repository
 
-- File chính: `code/Part1_Regression/preprocessing.ipynb`
-- Chạy tuần tự các cell để:
-  1. Load dữ liệu thô
-  2. Làm sạch dữ liệu (loại bỏ đơn không giao, xử lý giá trị thiếu)
-  3. Feature Engineering (tạo biến mới)
-  4. Lưu dữ liệu đã xử lý vào `data/processed/`
+```bash
+git clone https://github.com/conluoi123/Machine-Learning---Project-1-.git
+cd Machine-Learning---Project-1-
+```
 
-### 5.2. Huấn luyện mô hình (Model Training)
+### 2. Tạo môi trường ảo
 
-- File chính: `code/Part1_Regression/models.ipynb`
-- Chạy tuần tự các cell để:
-  1. Load dữ liệu đã xử lý
-  2. Huấn luyện các mô hình (Linear Regression, Ridge, Lasso, SVR, Random Forest, XGBoost)
-  3. Đánh giá hiệu năng (MAE, MSE, R2, RMSE)
-  4. Lưu mô hình tốt nhất vào `models/`
+```bash
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# macOS / Linux
+source .venv/bin/activate
+```
 
-## 6. Kết quả
+### 3. Cài đặt thư viện
 
-(Sẽ cập nhật sau khi hoàn thành phần 2)
+```bash
+pip install -r code/Part1_Regression/requirements.txt
+```
+
+### 4. Chạy notebooks
+
+| Thứ tự | File                                       | Mô tả                                         |
+| ------ | ------------------------------------------ | --------------------------------------------- |
+| 1️⃣     | `code/Part1_Regression/notebook.ipynb`     | EDA + Tiền xử lý dữ liệu hồi quy              |
+| 2️⃣     | `code/Part1_Regression/models.ipynb`       | Huấn luyện & đánh giá toàn bộ mô hình hồi quy |
+| 3️⃣     | `code/Part2_Classification/notebook.ipynb` | EDA + Tiền xử lý dữ liệu phân loại            |
+| 4️⃣     | `code/Part2_Classification/models.ipynb`   | Pipeline phân loại chính                      |
+
+> ⚠️ **Lưu ý:** Dữ liệu thô Olist (~120MB) cần được đặt trong thư mục `data/`. Tham khảo [Kaggle Dataset](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) để tải về.
+
+---
+
+## 📊 Kết quả — Part 1: Regression
+
+### Pipeline
+
+```
+Raw Data (9 bảng Olist)
+    → Merge & Làm sạch (loại đơn hủy, xử lý NaN)
+    → Feature Engineering (9 features logistics)
+    → Chuẩn hóa (QuantileTransformer + TargetEncoder)
+    → Train / Val / Test Split (70% / 15% / 15%)
+    → Mô hình hồi quy (từ baseline đến nâng cao)
+```
+
+### Hiệu năng mô hình (Test Set – đơn vị ngày)
+
+| Mô hình                               | RMSE (ngày) | MAE (ngày) | R²          |
+| ------------------------------------- | ----------- | ---------- | ----------- |
+| **Baseline (Normal Equations / OLS)** | 4.26        | 3.30       | 0.383       |
+| Ridge / Bayesian Regression           | 4.27        | 3.30       | 0.379       |
+| **Robust Regression (Huber Loss)**    | **4.15\***  | **3.12\*** | **0.410\*** |
+
+_\*Ước tính trên tập có outlier được inject._
+
+### Các mô hình đã triển khai
+
+| Mô hình                         | Kỹ thuật chính                                      |
+| ------------------------------- | --------------------------------------------------- |
+| **Normal Equations**            | `np.linalg.pinv` – baseline                         |
+| **Mini-batch GD**               | Cosine Annealing LR, batch_size=256                 |
+| **Ridge / Lasso / Elastic Net** | Regularization path, Coordinate Descent             |
+| **Non-linear Basis Functions**  | Polynomial (deg 2), RBF, Trigonometric, Interaction |
+| **Bayesian Regression**         | EM (Evidence Maximization), α/β tự động             |
+| **Gaussian Process Regression** | RBF kernel, uncertainty quantification              |
+| **Robust Regression**           | Huber Loss, giảm 19.1% RMSE trên dữ liệu có outlier |
+
+### Ablation Study – Basis Functions
+
+| Cấu hình                   | MSE    | Δ MSE                |
+| -------------------------- | ------ | -------------------- |
+| **Full Model (All Basis)** | 0.6298 | –                    |
+| Loại Polynomial            | 0.6328 | +0.0030 ✗ Critical   |
+| Loại Trigonometric         | 0.6315 | +0.0017 ✗ Meaningful |
+| Loại Interaction           | 0.6306 | +0.0008              |
+| Loại Gaussian RBF          | 0.6298 | −0.000002 (noise)    |
+
+> **Kết luận:** Polynomial (deg 2) và Trigonometric là hai thành phần quan trọng nhất; RBF trong cấu hình hiện tại không đóng góp đáng kể.
+
+---
+
+## 📊 Kết quả — Part 2: Classification
+
+Các mô hình phân loại đã được triển khai và đánh giá:
+
+| Mô hình                               | Notebook                         |
+| ------------------------------------- | -------------------------------- |
+| Perceptron                            | `models.ipynb`                   |
+| Logistic Regression (GD, L2, Kernel)  | `models.ipynb`                   |
+| Linear Discriminant Analysis (LDA)    | `models.ipynb`                   |
+| Quadratic Discriminant Analysis (QDA) | `models.ipynb`                   |
+| Thử nghiệm bổ sung                    | `model_2.ipynb`, `model_3.ipynb` |
+
+Kết quả chi tiết (Confusion Matrix, ROC, PR Curve) được lưu trong `report/figures/`.
+
+---
+
+## 📝 Báo cáo kỹ thuật
+
+Chi tiết phương pháp, hyperparameter tuning, và phân tích độ nhạy xem tại:
+➡️ [`report/technical_report.md`](report/technical_report.md)
+
+---
+
+## 👥 Thành viên nhóm
+
+_(Cập nhật thông tin thành viên tại đây)_
+
+---
+
+## 📄 License
+
+Dự án phục vụ mục đích học thuật. Dataset Olist thuộc bản quyền của [Olist](https://olist.com/) và được cấp phép theo [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
