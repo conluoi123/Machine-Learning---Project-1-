@@ -205,24 +205,64 @@ _\*Ước tính trên tập có outlier được inject._
 
 ## 📊 Kết quả — Part 2: Classification
 
-Các mô hình phân loại đã được triển khai và đánh giá:
+### Pipeline
 
-| Mô hình                               | Notebook                         |
-| ------------------------------------- | -------------------------------- |
-| Perceptron                            | `models.ipynb`                   |
-| Logistic Regression (GD, L2, Kernel)  | `models.ipynb`                   |
-| Linear Discriminant Analysis (LDA)    | `models.ipynb`                   |
-| Quadratic Discriminant Analysis (QDA) | `models.ipynb`                   |
-| Thử nghiệm bổ sung                    | `model_2.ipynb`, `model_3.ipynb` |
+```
+Raw Data (9 bảng Olist)
+    → Merge & Làm sạch (loại đơn hủy, xử lý NaN)
+    → Feature Engineering + Target Encoding (phase7)
+    → Chuẩn hóa (QuantileScaler – phase8)
+    → Train / Val / Test Split (70% / 15% / 15%)
+    → Mô hình phân loại (từ Perceptron đến LDA/QDA)
+```
 
-Kết quả chi tiết (Confusion Matrix, ROC, PR Curve) được lưu trong `report/figures/`.
+### Các mô hình đã triển khai
+
+| Mô hình | Kỹ thuật chính | Notebook |
+| ------- | -------------- | -------- |
+| **Perceptron** | Online learning, hội tụ tuyến tính | `models.ipynb` |
+| **Logistic Regression (Gradient Descent)** | Binary cross-entropy, L2 regularization | `models.ipynb` |
+| **Logistic Regression (Newton's Method)** | Hessian-based 2nd order optimization | `models.ipynb` |
+| **Kernel Logistic Regression** | RBF kernel, phi(x) mapping phi space | `models.ipynb` |
+| **Probit Regression** | Gaussian CDF link function | `models.ipynb` |
+| **Laplace Approximation** | Bayesian posterior trên Logistic Reg | `models.ipynb` |
+| **Gaussian Naive Bayes (GNB)** | Generative model, class-conditional | `models.ipynb` |
+| **Linear Discriminant Analysis (LDA)** | Shared covariance, Fisher criterion | `models.ipynb` |
+| **Quadratic Discriminant Analysis (QDA)** | Per-class covariance, quadratic boundary | `models.ipynb` |
+| **Thử nghiệm bổ sung** | Các cấu hình thay thế | `model_2.ipynb`, `model_3.ipynb` |
+
+### Phân tích chính
+
+- **Perceptron:** Vẽ convergence curve và decision boundary 2D — xác nhận hội tụ trên dữ liệu linearly separable. Kết quả lưu tại `figures/perceptron_logreg/`.
+- **Logistic Regression:** So sánh Gradient Descent vs. Newton's Method (tốc độ hội tụ), phân tích Loss vs. Epoch với nhiều λ regularization. Calibration curve và Reliability Diagram xác nhận độ tin cậy xác suất.
+- **Kernel LR:** Decision boundary phi chiều phi tuyến, kiểm chứng VC dimension.
+- **Probabilistic Models (Probit, Laplace, GNB):** Đánh giá Precision-Recall Curve và ROC Curve trên test set.
+- **LDA / QDA:** Phân tích Fisher Discriminability, so sánh decision boundary 2D cho từng lớp.
+- **Robustness:** Noise injection test (`noise_robustness.png`), sensitivity analysis theo tỷ lệ train/test split.
+
+### Đánh giá tổng thể (Cross-validation)
+
+| Metrics | Artifacts |
+| ------- | --------- |
+| Confusion Matrix | `figures/lr/confusion_matrix_lr.png`, `figures/lda_qda/confusion_matrix_lda_qda.png`, `figures/perceptron_logreg/confusion_matrix_final_model.png` |
+| ROC Curve | `figures/lda_qda/roc_curve_test.png`, `figures/perceptron_logreg/roc_pr_curve.png` |
+| PR Curve | `figures/lr/pr_curve_lr.png`, `figures/lr/precision_recall_curve_test.png` |
+| CV F1 Score | `figures/comparison/cv_f1_boxplot.png` |
+| Error Analysis | `figures/comparison/error_analysis.png` |
+| Fisher Discriminability | `figures/comparison/fisher_discriminability.png` |
+| Noise Robustness | `figures/comparison/noise_robustness.png` |
+
+> **Lưu ý:** Saved models được lưu tại `data/processed/` gồm `logistic_models.pkl`, `lda_qda_models.pkl`, và `perceptron_logreg_results.pkl`.
 
 ---
 
 ## 📝 Báo cáo kỹ thuật
 
-Chi tiết phương pháp, hyperparameter tuning, và phân tích độ nhạy xem tại:
-➡️ [`report/technical_report.md`](report/technical_report.md)
+| Phần | File |
+| ---- | ---- |
+| Part 1 – Regression (chi tiết) | [`report/technical_report.md`](report/technical_report.md) |
+
+Báo cáo Regression bao gồm: baseline Normal Equations, MBGD với Cosine Annealing, Regularization paths (Ridge/Lasso/ElasticNet), Ablation Study basis functions, Bayesian Regression (EM), GPR, và Robust Regression (Huber Loss).
 
 ---
 
