@@ -4,17 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import math
-import category_encoders as ce
-import time
 
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from statsmodels.tools.tools import add_constant
-from sklearn.model_selection import KFold
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, QuantileTransformer, MinMaxScaler
-from sklearn.ensemble import IsolationForest
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import MinMaxScaler
 
 def read_data(path, file_name):
     file_path = os.path.join(path, file_name)
@@ -24,7 +16,6 @@ def read_data(path, file_name):
     else:
         print(f"File {file_name} không tồn tại trong đường dẫn.")
         return None
-
 
 def filter_and_clean_order_status(dataframe):
     """
@@ -52,12 +43,6 @@ def filter_and_clean_order_status(dataframe):
 def initialize_target_variable(dataframe, mode='shipping'):
     """
     Tính toán biến mục tiêu và làm sạch dữ liệu.
-    
-    Parameters:
-    - dataframe: DataFrame đầu vào.
-    - mode: 
-        'shipping': Dự đoán từ lúc bưu cục nhận hàng đến lúc khách nhận (Carrier -> Customer).
-        'total': Dự đoán từ lúc đặt hàng đến lúc khách nhận (Purchase -> Customer).
     """
     df = dataframe.copy()
     
@@ -71,7 +56,6 @@ def initialize_target_variable(dataframe, mode='shipping'):
         df[col] = pd.to_datetime(df[col])
     
     # 2. Loại bỏ các dòng thiếu mốc thời gian quan trọng
-    # Nếu dự đoán chặng ship, bắt buộc phải có ngày bàn giao cho bưu cục (carrier_date)
     initial_rows = len(df)
     required_cols = ['order_delivered_customer_date']
     if mode == 'shipping':
@@ -232,61 +216,23 @@ def standardize_column_formats(df):
     print("CHUẨN HÓA ĐỊNH DẠNG HOÀN TẤT")
     return df_standardized
 
-def handle_duplicates(df, subset=None):
-    """
-    Phát hiện và loại bỏ các dòng trùng lặp trong DataFrame.
-    """
-    df_clean = df.copy()
-    
-    duplicate_count = df_clean.duplicated(subset=subset).sum()
-    
-    if duplicate_count == 0:
-        print("KIỂM TRA TRÙNG LẶP")
-        print("Không tìm thấy dòng trùng lặp nào.")
-        return df_clean
-
-    df_clean = df_clean.drop_duplicates(subset=subset, keep='first')
-    
-    print("XỬ LÝ TRÙNG LẶP HOÀN TẤT")
-    print(f"- Số lượng dòng trùng lặp đã xóa: {duplicate_count:,}")
-    print(f"- Kích thước dữ liệu sau khi xóa: {df_clean.shape}")
-    
-    return df_clean
-
 def haversine_distance(lat1, lon1, lat2, lon2):
     """
     Tính khoảng cách bề mặt địa cầu (Haversine formula) giữa 2 điểm tọa độ.
-    Trọng số bán kính trái đất R = 6371 km.
+    Sử dụng vectorized numpy để tối ưu tốc độ tính toán trên mảng lớn.
     """
-    R = 6371.0
+    R_KM = 6371.0 # Bán kính Trái Đất tính bằng km
     
-    # Chuyển đổi từ độ sang radian
     lat1, lon1, lat2, lon2 = map(np.radians, [lat1, lon1, lat2, lon2])
     
-    dlon = lon2 - lon1
     dlat = lat2 - lat1
+    dlon = lon2 - lon1
     
     a = np.sin(dlat / 2)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2)**2
     c = 2 * np.arcsin(np.sqrt(a))
     
-    distance = R * c
-    return distance
-
-def haversine_distance(lat1, lon1, lat2, lon2):
-    """
-    Tính khoảng cách Haversine giữa hai điểm trên mặt cầu (đơn vị: km).
-    Sử dụng vectorized numpy để tối ưu tốc độ.
-    """
-
-    lat1, lon1, lat2, lon2 = map(np.radians, [lat1, lon1, lat2, lon2])
-    
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-    
-    a = np.sin(dlat/2.0)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon/2.0)**2
-    c = 2 * np.arcsin(np.sqrt(a))
-    km = 6371 * c 
-    return km
+    distance_km = R_KM * c
+    return distance_km
 
 def merge_geolocation_and_calculate_distance(df_main, geo_df):
     df_result = df_main.copy()

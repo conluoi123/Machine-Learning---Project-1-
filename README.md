@@ -48,8 +48,6 @@ Machine-Learning---Project-1-/
 │   ├── raw_data.csv                # Dữ liệu thô đã merge (từ các bảng Olist)
 │   ├── raw/                        # Backup dữ liệu thô gốc
 │   ├── processed/                  # Dữ liệu đã xử lý & artifacts chia tập
-│   │   ├── train.csv / val.csv / test.csv
-│   │   ├── train_final.csv / val_final.csv / test_final.csv
 │   │   ├── X_train_scaled.csv / X_val_scaled.csv / X_test_scaled.csv
 │   │   ├── y_train.csv / y_val.csv / y_test.csv
 │   │   ├── olist_processed_data.joblib
