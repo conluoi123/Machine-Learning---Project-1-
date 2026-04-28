@@ -25,22 +25,20 @@ Do kích thước dữ liệu lớn và bao gồm các file binary (`.pkl`), ch�
 
 ## 📁 Cấu trúc thư mục
 
-```
-
-Machine-Learning---Project-1-/
+```text
+Machine-Learning---Project-1/
 │
 ├── code/
-│ ├── Part1_Regression/ # EDA, tiền xử lý & Model hồi quy (Olist)
-│ └── Part2_Classification/ # EDA, tiền xử lý & Model phân loại (Airline)
+│   ├── Part1_Regression/           # EDA, tiền xử lý & Model hồi quy (Olist)
+│   └── Part2_Classification/       # EDA, tiền xử lý & Model phân loại (Airline)
 ├── data/
-│ ├── raw/ # Backup dữ liệu thô gốc
-│ ├── processed/ # Dữ liệu đã xử lý & artifacts (.pkl)
-│ └── saved_models/ # Encoder & Scaler đã fit
+│   ├── raw/                        # Backup dữ liệu thô gốc
+│   ├── processed/                  # Dữ liệu đã xử lý & artifacts (.pkl)
+│   └── saved_models/               # Encoder & Scaler đã fit
 ├── report/
-│ ├── technical_report.md # Báo cáo kỹ thuật chi tiết (Part 1)
-│ └── figures/ # Toàn bộ biểu đồ xuất ra
+│   ├── technical_report.md         # Báo cáo kỹ thuật chi tiết (Part 1)
+│   └── figures/                    # Toàn bộ biểu đồ xuất ra
 └── requirements.txt
-
 ```
 
 ---
@@ -53,13 +51,16 @@ Machine-Learning---Project-1-/
 git clone https://github.com/conluoi123/Machine-Learning---Project-1-.git
 cd Machine-Learning---Project-1-
 python -m venv .venv
+# Windows
 .venv\Scripts\activate
+# macOS / Linux
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
 ### 2. Thiết lập dữ liệu
 
-Tải thư mục `data` từ Drive và giải nén vào thư mục gốc của project (cùng cấp với `code`).
+Tải thư mục `data` từ Drive và giải nén vào thư mục gốc của project (cùng cấp với thư mục `code`).
 
 ---
 
@@ -67,7 +68,7 @@ Tải thư mục `data` từ Drive và giải nén vào thư mục gốc của p
 
 ### Pipeline
 
-```
+```text
 Raw Data (Olist) → Merge & Clean → Feature Engineering → Scaling → Models
 ```
 
@@ -84,7 +85,7 @@ Raw Data (Olist) → Merge & Clean → Feature Engineering → Scaling → Model
 
 ### Pipeline
 
-```
+```text
 Raw Data (Airline) → Handling Missing → Target Encoding → Quantile Scaling → Models
 ```
 
@@ -103,17 +104,12 @@ Raw Data (Airline) → Handling Missing → Target Encoding → Quantile Scaling
 
 1. **Nguyễn Kim Quốc**
 2. **Huỳnh Trọng Viên**
-3. **Cao Quốc Tuấn**
-4. **Ngô Thị Thục Quyên**
-5. **Lục Hoàng Tuấn**
+3. _(Thành viên 3)_
+4. _(Thành viên 4)_
+5. _(Thành viên 5)_
 
 ---
 
 ## 📄 License
 
 Dự án phục vụ mục đích học thuật. Dataset thuộc bản quyền của các tác giả tương ứng trên Kaggle.
-
-```
-
-Tôi đã sửa lại đúng tiêu đề, nội dung Part 2 (Airline Satisfaction) và danh sách thành viên. Bạn chỉ cần dán nốt link Drive vào là hoàn hảo.
-```
