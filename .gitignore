@@ -1,2 +1,25 @@
+# Environments
+.venv/
+venv/
+env/
+ENV/
+
 # Python bytecode
 __pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# IDEs
+.vscode/
+.idea/
+
+# OS rác
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
