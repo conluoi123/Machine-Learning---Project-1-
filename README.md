@@ -111,7 +111,6 @@ Raw Data (Airline) → Handling Missing → Target Encoding → Quantile Scaling
 
 ## 📄 License
 
-Dự án phục vụ mục đích học thuật. Dataset thuộc bản quyền của các tác giả tương ứng trên Kaggle.
 
 ```
 
