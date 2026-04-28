@@ -4,7 +4,7 @@
 
 ---
 
-## 📌 Tổng quan dự án
+## Tổng quan dự án
 
 Dự án ứng dụng các kỹ thuật Machine Learning từ cơ bản đến nâng cao trên hai bộ dữ liệu thực tế, bao gồm **2 phần chính**:
 
@@ -15,15 +15,15 @@ Dự án ứng dụng các kỹ thuật Machine Learning từ cơ bản đến n
 
 ---
 
-## 🔗 Dữ liệu (Google Drive)
+## Dữ liệu (Google Drive)
 
 Do kích thước dữ liệu lớn và bao gồm các file binary (`.pkl`), chúng tôi đã lưu trữ toàn bộ thư mục `data/` trên Google Drive.
 
-👉 **[Link tải thư mục DATA tại đây (Google Drive)](https://drive.google.com/drive/folders/1jTmUrWcr3uta2RRPH7qYIhUI9fU2lMjy?usp=sharing)**
+**[Link tải thư mục DATA tại đây (Google Drive)](https://drive.google.com/drive/folders/1jTmUrWcr3uta2RRPH7qYIhUI9fU2lMjy?usp=sharing)**
 
 ---
 
-## 📁 Cấu trúc thư mục
+## Cấu trúc thư mục
 
 ```text
 Machine-Learning---Project-1/
@@ -43,7 +43,7 @@ Machine-Learning---Project-1/
 
 ---
 
-## 🚀 Hướng dẫn cài đặt & chạy
+## Hướng dẫn cài đặt & chạy
 
 ### 1. Cài đặt môi trường
 
@@ -64,7 +64,7 @@ Tải thư mục `data` từ Drive và giải nén vào thư mục gốc của p
 
 ---
 
-## 📊 Kết quả — Part 1: Regression (Olist Data)
+## Kết quả — Part 1: Regression (Olist Data)
 
 ### Pipeline
 
@@ -81,7 +81,7 @@ Raw Data (Olist) → Merge & Clean → Feature Engineering → Scaling → Model
 
 ---
 
-## 📊 Kết quả — Part 2: Classification (Airline Satisfaction)
+## Kết quả — Part 2: Classification (Airline Satisfaction)
 
 ### Pipeline
 
@@ -100,16 +100,16 @@ Raw Data (Airline) → Handling Missing → Target Encoding → Quantile Scaling
 
 ---
 
-## 👥 Thành viên nhóm (5 Thành viên)
+## Thành viên nhóm (5 Thành viên)
 
 1. **Nguyễn Kim Quốc**
 2. **Huỳnh Trọng Viên**
-3. _(Thành viên 3)_
-4. _(Thành viên 4)_
-5. _(Thành viên 5)_
+3. **Ngô Thị Thục Quyên**
+4. **Lục Hoàng Tuấn**
+5. **Cao Quốc Tuấn**
 
 ---
 
-## 📄 License
+## License
 
 Dự án phục vụ mục đích học thuật. Dataset thuộc bản quyền của các tác giả tương ứng trên Kaggle.

@@ -4,11 +4,11 @@ Thư mục này chứa toàn bộ các tập dữ liệu được sử dụng tr
 
 ---
 
-## 🔗 Tải dữ liệu từ Google Drive
+## Tải dữ liệu từ Google Drive
 
 Do kích thước dữ liệu lớn và bao gồm các file binary (`.pkl`), chúng tôi đã lưu trữ toàn bộ thư mục này trên Google Drive để đảm bảo tính nhất quán của môi trường.
 
-👉 **[Link tải thư mục DATA tại đây (Google Drive)](https://drive.google.com/drive/folders/1jTmUrWcr3uta2RRPH7qYIhUI9fU2lMjy?usp=sharing)**
+**[Link tải thư mục DATA tại đây (Google Drive)](https://drive.google.com/drive/folders/1jTmUrWcr3uta2RRPH7qYIhUI9fU2lMjy?usp=sharing)**
 
 ---
 
@@ -30,7 +30,7 @@ Dữ liệu của dự án có kích thước khá lớn và bao gồm các file
 
 ---
 
-## 📁 Cấu trúc thư mục thực tế
+## Cấu trúc thư mục thực tế
 
 ```text
 data/
@@ -46,7 +46,7 @@ data/
 
 ---
 
-## 🛠️ Chi tiết các thành phần chính
+## Chi tiết các thành phần chính
 
 ### 1. Dữ liệu thô (Raw Data) - `data/raw/`
 
@@ -65,7 +65,7 @@ Chứa các đối tượng dùng để biến đổi dữ liệu như `TargetEn
 
 ---
 
-## ⚠️ Lưu ý quan trọng
+## Lưu ý quan trọng
 
 - **Không thay đổi tên file**: Các đường dẫn trong Notebook đã được thiết lập theo dạng tương đối (Relative path). Việc giữ nguyên cấu trúc thư mục như trên là bắt buộc để code có thể chạy thành công.
 - **Môi trường chạy**: Nếu chạy trên local, hãy đảm bảo bạn đã cài đặt các thư viện trong `requirements.txt`.
