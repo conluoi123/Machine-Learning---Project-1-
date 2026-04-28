@@ -111,8 +111,3 @@ Raw Data (Airline) → Handling Missing → Target Encoding → Quantile Scaling
 
 ## 📄 License
 
-
-```
-
-Tôi đã sửa lại đúng tiêu đề, nội dung Part 2 (Airline Satisfaction) và danh sách thành viên. Bạn chỉ cần dán nốt link Drive vào là hoàn hảo.
-```
